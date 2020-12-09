@@ -1,0 +1,16 @@
+@import '~antd/dist/antd.css';
+
+@font-face {
+  font-family: Archia;
+  src: url('./assets/fonts/archia-regular-webfont.woff2');
+}
+
+body {
+  position: relative;
+  color: #222;
+  height: 100vh;
+  background-color: #fff;
+  overflow-y: hidden;
+  font-family: 'Archia', sans-serif !important;
+  margin: 0;
+}

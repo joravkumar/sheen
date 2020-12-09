@@ -1,0 +1,6 @@
+{
+  "HOME": "/",
+  "JOIN_SCREEN": "/join",
+  "SHARE_SCREEN": "/share-screen/:peerId",
+  "COUNTER": "/counter"
+}
