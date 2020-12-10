@@ -19,84 +19,75 @@ export default function ShareScreen(props: Props): JSX.Element {
   const friendVideoRef = useRef<null | HTMLVideoElement>(null);
   const [friendPeerId, setfriendPeerId] = useState<string>('');
 
-  const setDesktopStream = async () => {
-    const desktopStream = await getStream(true);
-    if (desktopStream) {
-      const video = videoRef.current;
-      if (video) {
-        video.srcObject = desktopStream;
-        // video.onloadedmetadata = () => video.play();
-      } else {
-        message.error(`Video Element Missing`);
-      }
-    } else {
-      message.error(`Error getting Desktop Access`);
-    }
-    return desktopStream;
-  };
-
-  const initPeer = (stream: MediaStream) => {
-    const peerObj = new Peer(undefined, {
-      host: '192.168.1.75',
-      port: 9000,
-      secure: true,
-      path: '/peerjs',
-      debug: 2,
-      config: {
-        iceServers: [
-          {
-            urls: 'stun:stun1.l.google.com:19302',
-          },
-          {
-            urls: 'turn:numb.viagenie.ca',
-            credential: 'muazkh',
-            username: 'webrtc@live.com',
-          },
-        ],
-      },
-    });
-
-    peerObj.on('open', () => {
-      setPeerId(peerObj.id);
-    });
-
-    peerObj.on('error', () => {
-      message.error('An error ocurred with peer:', 10);
-      history.push(routes.HOME);
-    });
-
-    peerObj.on('disconnected', () => {
-      history.push(routes.HOME);
-    });
-
-    peerObj.on('connection', (connection) => {
-      setfriendPeerId(connection.peer);
-      peerObj.call(connection.peer, stream);
-    });
-    peerObj.on('call', (peerCall) => {
-      peerCall.on('stream', (peerStream) => {
-        const video = friendVideoRef.current;
-        if (video) {
-          video.srcObject = peerStream;
-        }
-      });
-    });
-    setPeer(peerObj);
-  };
-
-  const initialize = async () => {
-    const stream = await setDesktopStream();
-    if (stream) {
-      initPeer(stream);
-    }
-  };
-
   useEffect(() => {
-    initialize();
+    const initPeer = (stream: MediaStream) => {
+      const peerObj = new Peer(undefined, {
+        host: '192.168.1.75',
+        port: 9000,
+        secure: true,
+        path: '/peerjs',
+        debug: 2,
+        config: {
+          iceServers: [
+            {
+              urls: 'stun:stun1.l.google.com:19302',
+            },
+            {
+              urls: 'turn:numb.viagenie.ca',
+              credential: 'muazkh',
+              username: 'webrtc@live.com',
+            },
+          ],
+        },
+      });
+
+      peerObj.on('open', () => {
+        setPeerId(peerObj.id);
+      });
+
+      peerObj.on('error', () => {
+        message.error('An error ocurred with peer:', 10);
+        history.push(routes.HOME);
+      });
+
+      peerObj.on('disconnected', () => {
+        history.push(routes.HOME);
+      });
+
+      peerObj.on('connection', (connection) => {
+        setfriendPeerId(connection.peer);
+        peerObj.call(connection.peer, stream);
+      });
+      peerObj.on('call', (peerCall) => {
+        peerCall.on('stream', (peerStream) => {
+          const video = friendVideoRef.current;
+          if (video) {
+            video.srcObject = peerStream;
+          }
+        });
+      });
+      setPeer(peerObj);
+    };
+    const setDesktopStream = async () => {
+      const desktopStream = await getStream(true);
+      if (desktopStream) {
+        initPeer(desktopStream);
+        const video = videoRef.current;
+        if (video) {
+          video.srcObject = desktopStream;
+          // video.onloadedmetadata = () => video.play();
+        } else {
+          message.error(`Video Element Missing`);
+        }
+      } else {
+        message.error(`Error getting Desktop Access`);
+      }
+    };
+    setDesktopStream();
     return () => {
       peer?.destroy();
     };
-  }, []);
+  }, [history, peer]);
   return (
     <div>
       <Link to={routes.HOME}>Home</Link>
