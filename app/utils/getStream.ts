@@ -1,27 +1,35 @@
-import { desktopCapturer } from 'electron';
+// import { desktopCapturer } from 'electron';
+import os from 'os';
 
-const getStream = async () => {
-  const sources = await desktopCapturer.getSources({
-    types: ['window', 'screen'],
-  });
-  const source = sources.find((src) => src.name === 'Entire Screen');
+const getStream = async (video?: boolean) => {
+  // const sources = await desktopCapturer.getSources({
+  //   types: ['window', 'screen'],
+  // });
+  // const source = sources.find((src) => src.name === 'Entire Screen');
 
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: {
+    const constraints: any = {
+      audio:
+        os.platform() !== 'darwin'
+          ? {
+              mandatory: {
+                chromeMediaSource: 'desktop',
+              },
+            }
+          : false,
+    };
+    if (video) {
+      constraints.video = {
         mandatory: {
           chromeMediaSource: 'desktop',
-          chromeMediaSourceId: source.id,
-          minWidth: 1280,
-          maxWidth: 1280,
-          minHeight: 720,
-          maxHeight: 720,
         },
-      },
-    });
+      };
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
     return stream;
   } catch (e) {
+    console.log(e);
     return null;
   }
 };
